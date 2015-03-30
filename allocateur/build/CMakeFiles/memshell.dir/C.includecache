@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/petitbop/tps/sepc/allocateur/src/mem.h
+variante.h
+/home/petitbop/tps/sepc/allocateur/src/variante.h
+
+/home/petitbop/tps/sepc/allocateur/src/memshell.c
+stdio.h
+-
+string.h
+-
+stdlib.h
+-
+mem.h
+/home/petitbop/tps/sepc/allocateur/src/mem.h
+
+/home/petitbop/tps/sepc/allocateur/src/variante.h
+

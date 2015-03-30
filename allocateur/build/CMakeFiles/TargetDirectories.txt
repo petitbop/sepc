@@ -1,0 +1,6 @@
+/home/petitbop/tps/sepc/allocateur/build/CMakeFiles/allocphy.dir
+/home/petitbop/tps/sepc/allocateur/build/CMakeFiles/alloctest.dir
+/home/petitbop/tps/sepc/allocateur/build/CMakeFiles/check.dir
+/home/petitbop/tps/sepc/allocateur/build/gtest/CMakeFiles/gtest.dir
+/home/petitbop/tps/sepc/allocateur/build/gtest/CMakeFiles/gtest_main.dir
+/home/petitbop/tps/sepc/allocateur/build/CMakeFiles/memshell.dir
