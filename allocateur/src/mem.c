@@ -18,7 +18,7 @@
 void *zone_memoire = 0;
 
 /* ecrire votre code ici */
-void* tzl[CFF_MAX_INDEX + 1];
+void* tzl[BUDDY_MAX_INDEX + 1];
 
 int mem_init()
 {
@@ -31,10 +31,10 @@ int mem_init()
     }
 
     /* ecrire votre code ici */
-    for(int i = 0; i < CFF_MAX_INDEX; i++){
+    for(int i = 0; i < BUDDY_MAX_INDEX; i++){
         tzl[i] = NULL;
     }
-    tzl[CFF_MAX_INDEX] = zone_memoire;
+    tzl[BUDDY_MAX_INDEX] = zone_memoire;
     (*(void**)zone_memoire) = NULL;
 
     return 0;
@@ -42,8 +42,10 @@ int mem_init()
 
 void* mem_alloc(unsigned long size)
 {
+    void** curr;
+    void* next;
     /*  ecrire votre code ici */
-    if (size > (1 << CFF_MAX_INDEX)){
+    if (size > (1 << BUDDY_MAX_INDEX)){
         return NULL;
     }
     if (size < sizeof(void *)){
@@ -51,8 +53,8 @@ void* mem_alloc(unsigned long size)
     }
     int exp = (int) log2((double) size);
     if(tzl[exp] != NULL){
-        (void**) curr = (void**)tzl[exp];
-        (void*) next = *curr;
+        curr = (void**)tzl[exp];
+        next = *curr;
         tzl[exp] = next;
         return (void*) curr;
     }
@@ -75,3 +77,4 @@ int mem_destroy()
     return 0;
 }
 
+#endif
