@@ -65,7 +65,7 @@ void* mem_alloc(unsigned long size)
     }
     int exp = exponent((int) size);
     if(tzl[exp] != NULL){
-        curr = (void**)tzl[exp];
+        curr = (void**)(tzl[exp]);
         next = *curr;
         tzl[exp] = next;
         return (void*) curr;
@@ -86,6 +86,11 @@ void* mem_alloc(unsigned long size)
 
             tzl[i] = addr_comp;
         }
+        next = tzl[i];
+        curr = (void**)addr;
+        *curr = next;
+
+        tzl[i] = addr;
         return addr;
 
     }
@@ -94,7 +99,23 @@ void* mem_alloc(unsigned long size)
 
 int mem_free(void *ptr, unsigned long size)
 {
-    /* ecrire votre code ici */
+    int exp;
+    void* prec;
+    void* curr;
+    void* next;
+    exp = exponent((int)size);
+    curr = tzl[exp];
+    prec = (void*)(&tzl[exp]);
+    while(ptr != curr && curr != NULL){
+        next = *(void**)curr;
+        prec = curr;
+        curr = next;
+    }
+    if(curr == NULL)
+        return 1;
+    next = *(void**) curr;
+    *(void**) prec = next;
+
     return 0;
 }
 
