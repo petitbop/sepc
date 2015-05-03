@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <math.h>
 #include "mem.h"
 
 /** squelette du TP allocateur memoire */
@@ -40,6 +39,16 @@ int mem_init()
     return 0;
 }
 
+static int exponent(int x){
+    int exp = 0;
+    assert(x > 0);
+    while(x != 1){
+        x /= 2;
+        exp += 1;
+    }
+    return exp;
+}
+
 void* mem_alloc(unsigned long size)
 {
     void** curr;
@@ -51,7 +60,7 @@ void* mem_alloc(unsigned long size)
     if (size < sizeof(void *)){
         return NULL;
     }
-    int exp = (int) log2((double) size);
+    int exp = exponent((int) size);
     if(tzl[exp] != NULL){
         curr = (void**)tzl[exp];
         next = *curr;
