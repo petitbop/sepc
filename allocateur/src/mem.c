@@ -39,6 +39,8 @@ int mem_init()
     return 0;
 }
 
+
+
 static int exponent(int x){
     int exp = 0;
     assert(x > 0);
@@ -49,8 +51,80 @@ static int exponent(int x){
     return exp;
 }
 
+static void* comp(void* addr, int size){
+    int i = exponent(size);
+    return (void*) (((int)(addr - zone_memoire) ^ (1 << i)) + zone_memoire);
+}
+
+static void* min(void* ptr1, void* ptr2){
+    if((unsigned int)ptr1 < (unsigned int) ptr2){
+        return ptr1;
+    } else {
+        return ptr2;
+    }
+}
+
+static void* max(void* ptr1, void* ptr2){
+    if((unsigned int)ptr1 > (unsigned int) ptr2){
+        return ptr1;
+    } else {
+        return ptr2;
+    }
+}
+
+static int is_in_tzl(void* ptr, int size){
+    int exp;
+    void* curr;
+    void* next;
+    exp = exponent((int)size);
+    curr = tzl[exp];
+    while(ptr != curr && curr != NULL){
+        next = *(void**)curr;
+        curr = next;
+    }
+    if(curr == NULL)
+        return 0;
+
+    return 1;
+}
+
+static int supp_from_tzl(void* ptr, int size){
+    int exp;
+    void* prec;
+    void* curr;
+    void* next;
+    exp = exponent((int)size);
+    prec = (void*)&tzl[exp];
+    curr = tzl[exp];
+    while(ptr != curr && curr != NULL){
+        next = *(void**)curr;
+        curr = next;
+    }
+    if(curr == NULL)
+        perror("pointer disappeared from tzl...");
+
+    *(void**)prec = next;
+    return 0;
+
+}
+
+static int add_to_tzl(void* ptr, int size){
+    int exp;
+    void* first;
+    exp = exponent(size);
+    first = tzl[exp];
+    *(void**)ptr = first;
+    tzl[exp] = ptr;
+
+    return 0;
+}
+
+
+
 void* mem_alloc(unsigned long size)
 {
+    if(! zone_memoire)
+        return (void*) 0;
     void** curr;
     void* next;
     void* addr;
@@ -97,27 +171,39 @@ void* mem_alloc(unsigned long size)
     return 0;  
 }
 
+
 int mem_free(void *ptr, unsigned long size)
 {
     int exp;
-    void* prec;
-    void* curr;
-    void* next;
+    int i;
+    void* addr;
+    void* addr_comp;
+    void* left_addr;
+    void* right_addr;
+
     exp = exponent((int)size);
-    curr = tzl[exp];
-    prec = (void*)(&tzl[exp]);
-    while(ptr != curr && curr != NULL){
-        next = *(void**)curr;
-        prec = curr;
-        curr = next;
+    i = exp;
+    addr = ptr;
+
+    while(i <= BUDDY_MAX_INDEX){
+        addr_comp = comp(addr, 1<<i);
+        if(i < BUDDY_MAX_INDEX && is_in_tzl(addr_comp, 1<<i)){
+            left_addr = min(addr, addr_comp);
+            right_addr = max(addr, addr_comp);
+            supp_from_tzl(right_addr,1<<i);
+
+            addr = left_addr;
+            i++;
+        } else{ 
+            add_to_tzl(addr, 1<<i);
+            break;
+        }
     }
-    if(curr == NULL)
-        return 1;
-    next = *(void**) curr;
-    *(void**) prec = next;
+
 
     return 0;
 }
+
 
 
 int mem_destroy()
