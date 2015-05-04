@@ -92,17 +92,23 @@ static int supp_from_tzl(void* ptr, int size){
     void* prec;
     void* curr;
     void* next;
+
     exp = exponent((int)size);
     prec = (void*)&tzl[exp];
     curr = tzl[exp];
+
     while(ptr != curr && curr != NULL){
         next = *(void**)curr;
+        prec = curr;
         curr = next;
     }
+
     if(curr == NULL)
         perror("pointer disappeared from tzl...");
 
+    next = *(void**)curr;
     *(void**)prec = next;
+
     return 0;
 
 }
@@ -110,6 +116,7 @@ static int supp_from_tzl(void* ptr, int size){
 static int add_to_tzl(void* ptr, int size){
     int exp;
     void* first;
+
     exp = exponent(size);
     first = tzl[exp];
     *(void**)ptr = first;
@@ -125,6 +132,7 @@ void* mem_alloc(unsigned long size)
     void* addr;
     void* addr_comp;
     int i;
+    int exp;
     /*  ecrire votre code ici */
     if(zone_memoire == NULL)
         return NULL;
@@ -134,7 +142,7 @@ void* mem_alloc(unsigned long size)
     if (size < sizeof(void *))
         return NULL;
 
-    int exp = exponent((int) size);
+    exp = exponent((int) size);
 
     if(tzl[exp] != NULL){
         addr = tzl[exp];
@@ -149,7 +157,7 @@ void* mem_alloc(unsigned long size)
         if(i == BUDDY_MAX_INDEX + 1)
             return (void*) 0;
         addr = tzl[i];
-        tzl[i] = *(void**)addr;
+        supp_from_tzl(addr, 1<<i);
         while(i != exp){
             i--;
             addr_comp = comp(addr, 1<<i);
@@ -201,6 +209,9 @@ int mem_destroy()
 
     free(zone_memoire);
     zone_memoire = 0;
+    for(int i = 0; i <= BUDDY_MAX_INDEX; i++){
+        tzl[i] = NULL;
+    }
     return 0;
 }
 
