@@ -63,14 +63,6 @@ static void* min(void* ptr1, void* ptr2){
     }
 }
 
-static void* max(void* ptr1, void* ptr2){
-    if((unsigned int)ptr1 > (unsigned int) ptr2){
-        return ptr1;
-    } else {
-        return ptr2;
-    }
-}
-
 static int is_in_tzl(void* ptr, int size){
     int exp;
     void* curr;
@@ -176,7 +168,6 @@ int mem_free(void *ptr, unsigned long size)
     void* addr;
     void* addr_comp;
     void* left_addr;
-    void* right_addr;
 
     exp = exponent((int)size);
     i = exp;
@@ -186,8 +177,7 @@ int mem_free(void *ptr, unsigned long size)
         addr_comp = comp(addr, 1<<i);
         if(i < BUDDY_MAX_INDEX && is_in_tzl(addr_comp, 1<<i)){
             left_addr = min(addr, addr_comp);
-            right_addr = max(addr, addr_comp);
-            supp_from_tzl(right_addr,1<<i);
+            supp_from_tzl(addr_comp,1<<i);
 
             addr = left_addr;
             i++;
