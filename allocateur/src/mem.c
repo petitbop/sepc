@@ -52,8 +52,7 @@ static int exponent(int x){
 }
 
 static void* comp(void* addr, int size){
-    int i = exponent(size);
-    return (void*) (((int)(addr - zone_memoire) ^ (1 << i)) + zone_memoire);
+    return (void*) (((int)(addr - zone_memoire) ^ size) + zone_memoire);
 }
 
 static void* min(void* ptr1, void* ptr2){
@@ -123,26 +122,26 @@ static int add_to_tzl(void* ptr, int size){
 
 void* mem_alloc(unsigned long size)
 {
-    if(! zone_memoire)
-        return (void*) 0;
-    void** curr;
-    void* next;
     void* addr;
     void* addr_comp;
     int i;
     /*  ecrire votre code ici */
-    if (size > (1 << BUDDY_MAX_INDEX)){
+    if(zone_memoire == NULL)
         return NULL;
-    }
-    if (size < sizeof(void *)){
+
+    if (size > (1 << BUDDY_MAX_INDEX))
         return NULL;
-    }
+    if (size < sizeof(void *))
+        return NULL;
+
     int exp = exponent((int) size);
+
     if(tzl[exp] != NULL){
-        curr = (void**)(tzl[exp]);
-        next = *curr;
-        tzl[exp] = next;
-        return (void*) curr;
+        addr = tzl[exp];
+        supp_from_tzl(addr, (int)size);
+
+        return addr;
+
     } else {
         i = exp;
         while(i <= BUDDY_MAX_INDEX && tzl[i] == NULL)
@@ -153,22 +152,12 @@ void* mem_alloc(unsigned long size)
         tzl[i] = *(void**)addr;
         while(i != exp){
             i--;
-            addr_comp = (void*) (((int)(addr - zone_memoire) ^ (1 << i)) + zone_memoire);
-            next = tzl[i];
-            curr = (void**)addr_comp;
-            *curr = next;
-
-            tzl[i] = addr_comp;
+            addr_comp = comp(addr, 1<<i);
+            add_to_tzl(addr_comp, 1<<i);
         }
-        next = tzl[i];
-        curr = (void**)addr;
-        *curr = next;
 
-        tzl[i] = addr;
         return addr;
-
     }
-    return 0;  
 }
 
 
