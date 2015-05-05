@@ -169,6 +169,11 @@ int mem_free(void *ptr, unsigned long size)
     void* addr_comp;
     void* left_addr;
 
+    if((unsigned int)ptr < (unsigned int) zone_memoire)
+        return 1;
+    if(((unsigned int)ptr) > (unsigned int) zone_memoire + ALLOC_MEM_SIZE - size)
+        return 1;
+
     exp = exponent((int)size);
     i = exp;
     addr = ptr;
