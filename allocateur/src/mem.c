@@ -51,16 +51,24 @@ static int exponent(int x){
     return exp;
 }
 
-static void* comp(void* addr, int size){
-    return (void*) (((int)(addr - zone_memoire) ^ size) + zone_memoire);
-}
-
 static void* min(void* ptr1, void* ptr2){
     if((unsigned int)ptr1 < (unsigned int) ptr2){
         return ptr1;
     } else {
         return ptr2;
     }
+}
+
+static unsigned int max(unsigned int size1, unsigned int size2){
+    if(size1 >  size2){
+        return size1;
+    } else {
+        return size2;
+    }
+}
+
+static void* comp(void* addr, int size){
+    return (void*) (((int)(addr - zone_memoire) ^ max(size, sizeof(void*))) + zone_memoire);
 }
 
 static int is_in_tzl(void* ptr, int size){
@@ -131,7 +139,7 @@ void* mem_alloc(unsigned long size)
 
     if (size > (1 << BUDDY_MAX_INDEX))
         return NULL;
-    if (size < sizeof(void *))
+    if (size <= 0)
         return NULL;
 
     exp = exponent((int) size);
@@ -152,6 +160,7 @@ void* mem_alloc(unsigned long size)
         supp_from_tzl(addr, 1<<i);
         while(i != exp){
             i--;
+            if(1<<i < sizeof(void*)) continue;
             addr_comp = comp(addr, 1<<i);
             add_to_tzl(addr_comp, 1<<i);
         }
@@ -168,6 +177,11 @@ int mem_free(void *ptr, unsigned long size)
     void* addr;
     void* addr_comp;
     void* left_addr;
+
+    if (size > (1 << BUDDY_MAX_INDEX))
+        return 1;
+    if (size < sizeof(void *))
+        return 1;
 
     if((unsigned int)ptr < (unsigned int) zone_memoire)
         return 1;
