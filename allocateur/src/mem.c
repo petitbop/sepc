@@ -143,6 +143,10 @@ void* mem_alloc(unsigned long size)
         return NULL;
 
     exp = exponent((int) size);
+    if(size > 1<<exp){
+        exp++;
+        size = 1<<exp;
+    }
 
     if(tzl[exp] != NULL){
         addr = tzl[exp];
@@ -191,6 +195,10 @@ int mem_free(void *ptr, unsigned long size)
 
     min_exp = exponent(sizeof(void*));
     exp = exponent((int)size);
+    if(size > 1<<exp){
+        exp++;
+        size = 1<<exp;
+    }
     i = exp;
     addr = ptr;
 
