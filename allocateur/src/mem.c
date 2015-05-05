@@ -172,6 +172,7 @@ void* mem_alloc(unsigned long size)
 
 int mem_free(void *ptr, unsigned long size)
 {
+    int min_exp;
     int exp;
     int i;
     void* addr;
@@ -180,7 +181,7 @@ int mem_free(void *ptr, unsigned long size)
 
     if (size > (1 << BUDDY_MAX_INDEX))
         return 1;
-    if (size < sizeof(void *))
+    if (size <= 0)
         return 1;
 
     if((unsigned int)ptr < (unsigned int) zone_memoire)
@@ -188,6 +189,7 @@ int mem_free(void *ptr, unsigned long size)
     if(((unsigned int)ptr) > (unsigned int) zone_memoire + ALLOC_MEM_SIZE - size)
         return 1;
 
+    min_exp = exponent(sizeof(void*));
     exp = exponent((int)size);
     i = exp;
     addr = ptr;
@@ -199,8 +201,15 @@ int mem_free(void *ptr, unsigned long size)
             supp_from_tzl(addr_comp,1<<i);
 
             addr = left_addr;
-            i++;
+            if(i < min_exp)
+                i = min_exp;
+            else
+                i++;
         } else{ 
+            if(i < min_exp){
+                i++;
+                continue;
+            }
             add_to_tzl(addr, 1<<i);
             break;
         }
